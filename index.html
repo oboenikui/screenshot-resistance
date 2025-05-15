@@ -36,7 +36,7 @@
             font-size: 16px;
             line-height: 1.5;
         }
-        #overlayCanvas {
+        #overlayCanvas1, #overlayCanvas2 {
             position: absolute;
             top: 0;
             left: 0;
@@ -44,6 +44,9 @@
             height: 100%;
             z-index: 2;
             pointer-events: none;
+        }
+        #overlayCanvas2 {
+            display: none;
         }
         .share-button {
             position: fixed;
@@ -162,7 +165,8 @@
 <body>
     <div class="container">
         <textarea id="textInput" placeholder="Enter text here..."></textarea>
-        <canvas id="overlayCanvas"></canvas>
+        <canvas id="overlayCanvas1"></canvas>
+        <canvas id="overlayCanvas2"></canvas>
         <div class="controls">
             <span class="toggle-label">Protect</span>
             <div id="toggleButton" class="toggle-switch">
@@ -262,34 +266,46 @@
         // 言語設定を適用
         applyLanguage();
 
-        const canvas = document.getElementById('overlayCanvas');
-        const ctx = canvas.getContext('2d');
-        const STRIPE_HEIGHT = 10; // 行の高さの1/3（16px * 1.5 / 3 = 8px）
-        let isEvenFrame = true; // 偶数フレームかどうかを示すフラグ
-        let isStripeVisible; // ストライプの表示状態
+        const canvas1 = document.getElementById('overlayCanvas1');
+        const canvas2 = document.getElementById('overlayCanvas2');
+        const ctx1 = canvas1.getContext('2d');
+        const ctx2 = canvas2.getContext('2d');
+        const STRIPE_HEIGHT = 10;
+        let isEvenFrame = true;
+        let isStripeVisible;
 
         function resizeCanvas() {
-            const rect = canvas.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
+            const rect = canvas1.getBoundingClientRect();
+            canvas1.width = rect.width;
+            canvas1.height = rect.height;
+            canvas2.width = rect.width;
+            canvas2.height = rect.height;
         }
 
         function drawFrame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const currentCanvas = isEvenFrame ? canvas1 : canvas2;
+            const currentCtx = isEvenFrame ? ctx1 : ctx2;
+            const nextCanvas = isEvenFrame ? canvas2 : canvas1;
+            
+            // 現在のCanvasをクリア
+            currentCtx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
             
             if (isStripeVisible) {
-                const rows = Math.ceil((canvas.height - 60) / STRIPE_HEIGHT); // 下部60pxを除外
+                const rows = Math.ceil((currentCanvas.height - 60) / STRIPE_HEIGHT);
                 
                 // 縞模様を描画
                 for (let row = 0; row < rows; row++) {
-                    // 偶数フレームでは偶数行を、奇数フレームでは奇数行を描画
                     if ((isEvenFrame && row % 2 === 0) || (!isEvenFrame && row % 2 === 1)) {
                         const y = row * STRIPE_HEIGHT;
-                        ctx.fillStyle = 'white';
-                        ctx.fillRect(0, y, canvas.width, STRIPE_HEIGHT);
+                        currentCtx.fillStyle = 'white';
+                        currentCtx.fillRect(0, y, currentCanvas.width, STRIPE_HEIGHT);
                     }
                 }
             }
+
+            // Canvasの表示を切り替え
+            currentCanvas.style.display = 'none';
+            nextCanvas.style.display = 'block';
 
             // フレームの偶奇を切り替え
             isEvenFrame = !isEvenFrame;
