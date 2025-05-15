@@ -276,10 +276,14 @@
 
         function resizeCanvas() {
             const rect = canvas1.getBoundingClientRect();
-            canvas1.width = rect.width;
-            canvas1.height = rect.height;
-            canvas2.width = rect.width;
-            canvas2.height = rect.height;
+            // 最小サイズを設定
+            const width = Math.max(rect.width, 1);
+            const height = Math.max(rect.height, 1);
+            
+            canvas1.width = width;
+            canvas1.height = height;
+            canvas2.width = width;
+            canvas2.height = height;
         }
 
         function drawFrame() {
@@ -323,9 +327,13 @@
             this.querySelector('.toggle-switch-text').textContent = isStripeVisible ? t.protectOn : t.protectOff;
         });
 
+        // DOMContentLoadedイベントで初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            resizeCanvas();
+            drawFrame();
+        });
+
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-        drawFrame();
 
         // AES暗号化のキー（実際の運用では環境変数などで管理すべき）
         const AES_KEY = 'your-secret-key-123';
