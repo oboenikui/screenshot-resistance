@@ -51,50 +51,31 @@
     <script>
         const canvas = document.getElementById('overlayCanvas');
         const ctx = canvas.getContext('2d');
-        let grid = [];
-        const CELL_SIZE = 16;
-        const COVERAGE_RATIO = 1/2;
+        const STRIPE_HEIGHT = 8; // 縞模様の高さ
+        let isEvenFrame = true; // 偶数フレームかどうかを示すフラグ
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            initializeGrid();
-        }
-
-        function initializeGrid() {
-            const cols = Math.ceil(canvas.width / CELL_SIZE);
-            const rows = Math.ceil(canvas.height / CELL_SIZE);
-            grid = Array(rows).fill().map(() => Array(cols).fill(false));
         }
 
         function drawFrame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const cols = Math.ceil(canvas.width / CELL_SIZE);
-            const rows = Math.ceil(canvas.height / CELL_SIZE);
-            const totalCells = cols * rows;
-            const cellsToFill = Math.floor(totalCells * COVERAGE_RATIO);
-
-            // 前のフレームのセルをクリア
-            for (let i = 0; i < rows; i++) {
-                for (let j = 0; j < cols; j++) {
-                    if (grid[i][j]) {
-                        grid[i][j] = false;
-                    }
-                }
-            }
-
-            // 新しいセルをランダムに選択して描画
-            for (let i = 0; i < cellsToFill; i++) {
-                const row = Math.floor(Math.random() * rows);
-                const col = Math.floor(Math.random() * cols);
-                
-                if (!grid[row][col]) {
-                    grid[row][col] = true;
+            const rows = Math.ceil(canvas.height / STRIPE_HEIGHT);
+            
+            // 縞模様を描画
+            for (let row = 0; row < rows; row++) {
+                // 偶数フレームでは偶数行を、奇数フレームでは奇数行を描画
+                if ((isEvenFrame && row % 2 === 0) || (!isEvenFrame && row % 2 === 1)) {
+                    const y = row * STRIPE_HEIGHT;
                     ctx.fillStyle = 'white';
-                    ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                    ctx.fillRect(0, y, canvas.width, STRIPE_HEIGHT);
                 }
             }
+
+            // フレームの偶奇を切り替え
+            isEvenFrame = !isEvenFrame;
 
             requestAnimationFrame(drawFrame);
         }
