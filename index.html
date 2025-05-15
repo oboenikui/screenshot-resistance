@@ -46,7 +46,7 @@
             pointer-events: none;
         }
         #overlayCanvas2 {
-            display: none;
+            visibility: hidden;
         }
         .share-button {
             position: fixed;
@@ -317,8 +317,8 @@
             resizeCanvas();
             
             // Canvasの表示を切り替え
-            currentCanvas.style.display = 'none';
-            nextCanvas.style.display = 'block';
+            currentCanvas.style.visibility = 'hidden';
+            nextCanvas.style.visibility = 'visible';
 
             // フレームの偶奇を切り替え
             isEvenFrame = !isEvenFrame;
