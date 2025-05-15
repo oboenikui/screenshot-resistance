@@ -272,7 +272,7 @@
         const ctx2 = canvas2.getContext('2d');
         const STRIPE_HEIGHT = 10;
         let isEvenFrame = true;
-        let isStripeVisible;
+        let isStripeVisible = false;
         let lastWidth = 0;
         let lastHeight = 0;
 
@@ -294,15 +294,12 @@
                 // 両方のキャンバスに縞模様を描画
                 [ctx1, ctx2].forEach((ctx, index) => {
                     ctx.clearRect(0, 0, width, height);
-                    
-                    if (isStripeVisible) {
-                        const rows = Math.ceil((height - 60) / STRIPE_HEIGHT);
-                        for (let row = 0; row < rows; row++) {
-                            if ((index === 0 && row % 2 === 0) || (index === 1 && row % 2 === 1)) {
-                                const y = row * STRIPE_HEIGHT;
-                                ctx.fillStyle = 'white';
-                                ctx.fillRect(0, y, width, STRIPE_HEIGHT);
-                            }
+                    const rows = Math.ceil(height / STRIPE_HEIGHT);
+                    for (let row = 0; row < rows; row++) {
+                        if ((index === 0 && row % 2 === 0) || (index === 1 && row % 2 === 1)) {
+                            const y = row * STRIPE_HEIGHT;
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(0, y, width, STRIPE_HEIGHT);
                         }
                     }
                 });
@@ -316,9 +313,15 @@
             // サイズチェック
             resizeCanvas();
             
-            // Canvasの表示を切り替え
-            currentCanvas.style.visibility = 'hidden';
-            nextCanvas.style.visibility = 'visible';
+            if (isStripeVisible) {
+                // プロテクトONの場合は通常の切り替え
+                currentCanvas.style.visibility = 'hidden';
+                nextCanvas.style.visibility = 'visible';
+            } else {
+                // プロテクトOFFの場合は両方非表示
+                currentCanvas.style.visibility = 'hidden';
+                nextCanvas.style.visibility = 'hidden';
+            }
 
             // フレームの偶奇を切り替え
             isEvenFrame = !isEvenFrame;
