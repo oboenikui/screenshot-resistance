@@ -60,6 +60,90 @@
         .share-button:hover {
             background-color: #0056b3;
         }
+        .toggle-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 3;
+        }
+        .toggle-button:hover {
+            background-color: #5a6268;
+        }
+        .toggle-button.active {
+            background-color: #28a745;
+        }
+        .toggle-button.active:hover {
+            background-color: #218838;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 34px;
+            background-color: #6c757d;
+            border-radius: 17px;
+            cursor: pointer;
+            z-index: 3;
+            transition: background-color 0.3s;
+            margin-left: 4px;
+        }
+        .toggle-switch.active {
+            background-color: #28a745;
+        }
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            top: 4px;
+            left: 4px;
+            background-color: white;
+            transition: transform 0.3s;
+            z-index: 2;
+        }
+        .toggle-switch .toggle-switch-text {
+            transform: translateX(16px);
+        }
+        .toggle-switch.active .toggle-switch-text {
+            transform: translateX(-16px);
+        }
+        .toggle-switch.active::before {
+            transform: translateX(46px);
+        }
+        .toggle-switch-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-size: 11px;
+            line-height: 34px;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .toggle-label {
+            position: relative;
+            display: inline-block;
+            color: #333;
+            font-size: 12px;
+            line-height: 34px;
+            user-select: none;
+            margin-right: 4px;
+        }
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            z-index: 3;
+        }
         .readonly {
             user-select: none !important;
             -webkit-user-select: none !important;
@@ -79,7 +163,13 @@
     <div class="container">
         <textarea id="textInput" placeholder="Enter text here..."></textarea>
         <canvas id="overlayCanvas"></canvas>
-        <button id="shareButton" class="share-button">Share</button>
+        <div class="controls">
+            <span class="toggle-label">Protect</span>
+            <div id="toggleButton" class="toggle-switch">
+                <span class="toggle-switch-text">OFF</span>
+            </div>
+            <button id="shareButton" class="share-button">Share</button>
+        </div>
     </div>
 
     <script>
@@ -90,42 +180,60 @@
                 shareButton: 'Share',
                 shareSuccess: 'Share URL copied to clipboard!',
                 shareError: 'Failed to copy share URL. Please copy manually:\n',
-                emptyText: 'Please enter text to share.'
+                emptyText: 'Please enter text to share.',
+                protectOn: 'ON',
+                protectOff: 'OFF',
+                protectLabel: 'Protect'
             },
             'es': {
                 placeholder: 'Ingrese texto aquí...',
                 shareButton: 'Compartir',
                 shareSuccess: '¡URL de compartir copiada al portapapeles!',
                 shareError: 'Error al copiar la URL de compartir. Por favor, copie manualmente:\n',
-                emptyText: 'Por favor, ingrese texto para compartir.'
+                emptyText: 'Por favor, ingrese texto para compartir.',
+                protectOn: 'ON',
+                protectOff: 'OFF',
+                protectLabel: 'Proteger'
             },
             'fr': {
                 placeholder: 'Entrez votre texte ici...',
                 shareButton: 'Partager',
                 shareSuccess: 'URL de partage copiée dans le presse-papiers !',
                 shareError: 'Échec de la copie de l\'URL de partage. Veuillez copier manuellement :\n',
-                emptyText: 'Veuillez entrer du texte à partager.'
+                emptyText: 'Veuillez entrer du texte à partager.',
+                protectOn: 'ON',
+                protectOff: 'OFF',
+                protectLabel: 'Protection'
             },
             'de': {
                 placeholder: 'Text hier eingeben...',
                 shareButton: 'Teilen',
                 shareSuccess: 'Teilen-URL in die Zwischenablage kopiert!',
                 shareError: 'Fehler beim Kopieren der Teilen-URL. Bitte manuell kopieren:\n',
-                emptyText: 'Bitte geben Sie Text zum Teilen ein.'
+                emptyText: 'Bitte geben Sie Text zum Teilen ein.',
+                protectOn: 'EIN',
+                protectOff: 'AUS',
+                protectLabel: 'Schutz'
             },
             'zh': {
                 placeholder: '在此输入文本...',
                 shareButton: '分享',
                 shareSuccess: '分享链接已复制到剪贴板！',
                 shareError: '复制分享链接失败。请手动复制：\n',
-                emptyText: '请输入要分享的文本。'
+                emptyText: '请输入要分享的文本。',
+                protectOn: '开启',
+                protectOff: '关闭',
+                protectLabel: '保护'
             },
             'ja': {
                 placeholder: 'ここにテキストを入力してください...',
                 shareButton: '共有',
                 shareSuccess: '共有URLをクリップボードにコピーしました！',
                 shareError: '共有URLのコピーに失敗しました。手動でコピーしてください：\n',
-                emptyText: '共有するテキストを入力してください。'
+                emptyText: '共有するテキストを入力してください。',
+                protectOn: 'ON',
+                protectOff: 'OFF',
+                protectLabel: 'プロテクト'
             }
         };
 
@@ -147,6 +255,8 @@
             
             document.getElementById('textInput').placeholder = t.placeholder;
             document.getElementById('shareButton').textContent = t.shareButton;
+            document.querySelector('.toggle-switch-text').textContent = t.protectOff;
+            document.querySelector('.toggle-label').textContent = t.protectLabel;
         };
 
         // 言語設定を適用
@@ -154,26 +264,30 @@
 
         const canvas = document.getElementById('overlayCanvas');
         const ctx = canvas.getContext('2d');
-        const STRIPE_HEIGHT = 8; // 縞模様の高さ
+        const STRIPE_HEIGHT = 10; // 行の高さの1/3（16px * 1.5 / 3 = 8px）
         let isEvenFrame = true; // 偶数フレームかどうかを示すフラグ
+        let isStripeVisible; // ストライプの表示状態
 
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
         }
 
         function drawFrame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const rows = Math.ceil(canvas.height / STRIPE_HEIGHT);
-            
-            // 縞模様を描画
-            for (let row = 0; row < rows; row++) {
-                // 偶数フレームでは偶数行を、奇数フレームでは奇数行を描画
-                if ((isEvenFrame && row % 2 === 0) || (!isEvenFrame && row % 2 === 1)) {
-                    const y = row * STRIPE_HEIGHT;
-                    ctx.fillStyle = 'white';
-                    ctx.fillRect(0, y, canvas.width, STRIPE_HEIGHT);
+            if (isStripeVisible) {
+                const rows = Math.ceil((canvas.height - 60) / STRIPE_HEIGHT); // 下部60pxを除外
+                
+                // 縞模様を描画
+                for (let row = 0; row < rows; row++) {
+                    // 偶数フレームでは偶数行を、奇数フレームでは奇数行を描画
+                    if ((isEvenFrame && row % 2 === 0) || (!isEvenFrame && row % 2 === 1)) {
+                        const y = row * STRIPE_HEIGHT;
+                        ctx.fillStyle = 'white';
+                        ctx.fillRect(0, y, canvas.width, STRIPE_HEIGHT);
+                    }
                 }
             }
 
@@ -182,6 +296,16 @@
 
             requestAnimationFrame(drawFrame);
         }
+
+        // トグルボタンのイベントリスナー
+        document.getElementById('toggleButton').addEventListener('click', function() {
+            const lang = getBrowserLanguage();
+            const t = translations[lang];
+            
+            isStripeVisible = !isStripeVisible;
+            this.classList.toggle('active');
+            this.querySelector('.toggle-switch-text').textContent = isStripeVisible ? t.protectOn : t.protectOff;
+        });
 
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
@@ -196,6 +320,7 @@
 
         // 共有モードかどうかを判定
         const isSharedMode = !!encryptedText;
+        isStripeVisible = isSharedMode; // 共有モードの場合はON、それ以外はOFF
 
         if (isSharedMode) {
             try {
@@ -207,6 +332,7 @@
                     textInput.readOnly = true;
                     textInput.classList.add('readonly');
                     document.getElementById('shareButton').style.display = 'none';
+                    document.querySelector('.controls').style.display = 'none'; // プロテクトスイッチを非表示
 
                     // コピー防止のためのイベントリスナーを追加
                     textInput.addEventListener('copy', (e) => e.preventDefault());
