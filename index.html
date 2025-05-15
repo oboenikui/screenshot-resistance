@@ -273,40 +273,49 @@
         const STRIPE_HEIGHT = 10;
         let isEvenFrame = true;
         let isStripeVisible;
+        let lastWidth = 0;
+        let lastHeight = 0;
 
         function resizeCanvas() {
             const rect = canvas1.getBoundingClientRect();
-            // 最小サイズを設定
             const width = Math.max(rect.width, 1);
             const height = Math.max(rect.height, 1);
             
-            canvas1.width = width;
-            canvas1.height = height;
-            canvas2.width = width;
-            canvas2.height = height;
+            // サイズが変更された場合のみ再描画
+            if (width !== lastWidth || height !== lastHeight) {
+                lastWidth = width;
+                lastHeight = height;
+                
+                canvas1.width = width;
+                canvas1.height = height;
+                canvas2.width = width;
+                canvas2.height = height;
+
+                // 両方のキャンバスに縞模様を描画
+                [ctx1, ctx2].forEach((ctx, index) => {
+                    ctx.clearRect(0, 0, width, height);
+                    
+                    if (isStripeVisible) {
+                        const rows = Math.ceil((height - 60) / STRIPE_HEIGHT);
+                        for (let row = 0; row < rows; row++) {
+                            if ((index === 0 && row % 2 === 0) || (index === 1 && row % 2 === 1)) {
+                                const y = row * STRIPE_HEIGHT;
+                                ctx.fillStyle = 'white';
+                                ctx.fillRect(0, y, width, STRIPE_HEIGHT);
+                            }
+                        }
+                    }
+                });
+            }
         }
 
         function drawFrame() {
             const currentCanvas = isEvenFrame ? canvas1 : canvas2;
-            const currentCtx = isEvenFrame ? ctx1 : ctx2;
             const nextCanvas = isEvenFrame ? canvas2 : canvas1;
             
-            // 現在のCanvasをクリア
-            currentCtx.clearRect(0, 0, currentCanvas.width, currentCanvas.height);
+            // サイズチェック
+            resizeCanvas();
             
-            if (isStripeVisible) {
-                const rows = Math.ceil((currentCanvas.height - 60) / STRIPE_HEIGHT);
-                
-                // 縞模様を描画
-                for (let row = 0; row < rows; row++) {
-                    if ((isEvenFrame && row % 2 === 0) || (!isEvenFrame && row % 2 === 1)) {
-                        const y = row * STRIPE_HEIGHT;
-                        currentCtx.fillStyle = 'white';
-                        currentCtx.fillRect(0, y, currentCanvas.width, STRIPE_HEIGHT);
-                    }
-                }
-            }
-
             // Canvasの表示を切り替え
             currentCanvas.style.display = 'none';
             nextCanvas.style.display = 'block';
@@ -327,10 +336,13 @@
             this.querySelector('.toggle-switch-text').textContent = isStripeVisible ? t.protectOn : t.protectOff;
         });
 
-        // DOMContentLoadedイベントで初期化
-        document.addEventListener('DOMContentLoaded', () => {
-            resizeCanvas();
-            drawFrame();
+        // loadイベントとrequestAnimationFrameで初期化
+        window.addEventListener('load', () => {
+            // 次のフレームで実行することで、スタイルの適用を待つ
+            requestAnimationFrame(() => {
+                resizeCanvas();
+                drawFrame();
+            });
         });
 
         window.addEventListener('resize', resizeCanvas);
